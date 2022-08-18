@@ -1,0 +1,40 @@
+.login-title {
+    color: #737373;
+    text-align: center;
+}
+
+.login-background {
+    height: 100vh;
+}
+
+.login-button {
+    font-weight: 400;
+    width: 300;
+}
+
+.login-wrapper {
+    height: 100%;
+}
+
+.login-card {
+    padding: 25px 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.18);
+}
+
+.brand {
+    text-align: center;
+    position: relative;
+}
+
+.logo {
+    width: 80px;
+    margin-bottom: 24px;
+    margin-left: -29px;
+}
+
+.copy-right {
+    text-align: center;
+    margin-top: 16px;
+    color: gray;
+}
