@@ -10,23 +10,23 @@ import {
     composeValidators,
     maxLength,
 } from "@utils/form-validator.utils";
+import { requestLoginUser } from "../../api/login.api";
 
 interface FormProps {
     email: string;
     password: string;
 }
-export const LoginForm: React.FC<any> = () => {
+
+export const LoginForm: React.FC = () => {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (formValues: FormProps) => {
         setSubmitting(true);
         try {
-            console.log(formValues);
+            await requestLoginUser(formValues);
             router.push("/admin");
-            //   await requestLogin(formValues)();
         } catch (e) {
-            //   printErrorMessage(e);
         }
         setSubmitting(false);
     };

@@ -1,8 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Space, Table, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import _ from "lodash";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ProductForm } from "@components/Forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getProducts, deleteProducts } from "../../api/product.api";
 
 interface DataType {
     key: string;
@@ -28,6 +31,9 @@ const columns: ColumnsType<DataType> = [
         title: "Description",
         dataIndex: "description",
         key: "description",
+        render: (description) => (
+            <div>{description === "undefined" ? "" : description}</div>
+        ),
     },
     {
         title: "Category",
@@ -48,13 +54,13 @@ const columns: ColumnsType<DataType> = [
         render: (onclick, data) => (
             <Space size="middle">
                 <Button
-                    onClick={() => onclick.edit(data.key)}
+                    onClick={() => onclick.edit(data)}
                     type="primary"
                     icon={<EditOutlined />}
                     shape="circle"
                 />
                 <Button
-                    onClick={() => onclick.delete(data.key)}
+                    onClick={() => onclick.delete(data)}
                     type="primary"
                     icon={<DeleteOutlined />}
                     shape="circle"
@@ -72,31 +78,50 @@ interface Props {
 
 const List: React.FC<Props> = ({ edit, setEdit }) => {
     const [id, setId] = useState();
+    const [data, setData] = useState() as any;
 
-    const onEdit = (key: any) => {
-        setId(key);
+    const onEdit = (data: any) => {
+        setId(data.id);
         setEdit(true);
     };
 
-    const onDelete = () => {};
+    const onDelete = async (data: any) => {
+        await deleteProducts(data.id);
+        getProductsData();
+    };
 
-    const data: DataType[] = [
-        {
-            key: "1",
-            name: "Pizza",
-            description: "Cheese Pizza",
-            category: "Food",
-            price: 50,
-            onclick: { edit: onEdit, delete: onDelete },
-        },
-    ];
+    const getProductsData = async () => {
+        const users: any = await getProducts();
+        setData(
+            _.map(users, (a, i: number) => {
+                return {
+                    ...a,
+                    key: ++i,
+                    onclick: { edit: onEdit, delete: onDelete },
+                };
+            })
+        );
+    };
+
+    useEffect(() => {
+        getProductsData();
+    }, []);
 
     return !edit ? (
         <Table bordered columns={columns} dataSource={data} />
     ) : !id ? (
-        <ProductForm setEdit={setEdit} setId={setId} />
+        <ProductForm
+            setEdit={setEdit}
+            setId={setId}
+            getProductsData={getProductsData}
+        />
     ) : (
-        <ProductForm id={id} setEdit={setEdit} setId={setId} />
+        <ProductForm
+            id={id}
+            setEdit={setEdit}
+            setId={setId}
+            getProductsData={getProductsData}
+        />
     );
 };
 

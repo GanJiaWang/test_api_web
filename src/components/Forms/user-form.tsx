@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
 import { Row, Col, Button } from "antd";
 import { Formik, Form, Field } from "formik";
 import { TextInput } from "@components/Fields";
@@ -8,6 +9,7 @@ import {
     email,
     phoneNumber,
 } from "@utils/form-validator.utils";
+import { updateUsers, createUsers, getUser } from "../../api/user.api";
 
 interface FormProps {
     email: string;
@@ -16,21 +18,40 @@ interface FormProps {
     contactNo: string;
 }
 
-export const UserForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
-    const { id, setEdit, setId } = props;
+export const UserForm = (props: {
+    id?: any;
+    setEdit?: any;
+    setId?: any;
+    getUsersData?: any;
+}) => {
+    const { id, setEdit, setId, getUsersData } = props;
     const [submitting, setSubmitting] = useState(false);
+    const [oneUser, setOneUser] = useState() as any;
+
+    useEffect(() => {
+        if (id) getOneUser();
+    }, []);
+
+    const getOneUser = async () => {
+        const data = await getUser(id);
+        setOneUser(data);
+    };
 
     const handleSubmit = async (formValues: FormProps) => {
         setSubmitting(true);
         try {
-            console.log(formValues);
+            if (id) {
+                await updateUsers({ id, formValues });
+                setId();
+            } else {
+                await createUsers(formValues);
+            }
+            setSubmitting(false);
+            getUsersData();
             setEdit(false);
-            if (id) setId();
-            //   await requestLogin(formValues)();
         } catch (e) {
-            //   printErrorMessage(e);
+            setSubmitting(false);
         }
-        setSubmitting(false);
     };
 
     const onCancel = () => {
@@ -40,8 +61,13 @@ export const UserForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
 
     return (
         <Formik
+            enableReinitialize
             onSubmit={handleSubmit}
-            initialValues={{ email: "", name: "", contactNo: "" }}
+            initialValues={{
+                email: oneUser ? oneUser.email : "",
+                name: oneUser ? oneUser.name : "",
+                contactNo: oneUser ? oneUser.contactNo : "",
+            }}
         >
             <Form>
                 <div className="mx-40">
@@ -56,7 +82,6 @@ export const UserForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 label="Email"
                                 name="email"
                                 type="email"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Email"
                                 validate={composeValidators(required, email)}
@@ -67,7 +92,6 @@ export const UserForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 required={!id}
                                 label="Password"
                                 name="password"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Password"
                                 type="password"
@@ -79,7 +103,6 @@ export const UserForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 required
                                 label="Full Name"
                                 name="name"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Full Name"
                                 validate={composeValidators(required)}
@@ -90,7 +113,6 @@ export const UserForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 required
                                 label="Contact No"
                                 name="contactNo"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Contact No"
                                 validate={composeValidators(

@@ -1,8 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Space, Table, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import _ from "lodash";
 import { UserForm } from "@components/Forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getUsers, deleteUsers } from "../../api/user.api";
 
 interface DataType {
     key: string;
@@ -41,13 +44,13 @@ const columns: ColumnsType<DataType> = [
         render: (onclick, data) => (
             <Space size="middle">
                 <Button
-                    onClick={() => onclick.edit(data.key)}
+                    onClick={() => onclick.edit(data)}
                     type="primary"
                     icon={<EditOutlined />}
                     shape="circle"
                 />
                 <Button
-                    onClick={() => onclick.delete(data.key)}
+                    onClick={() => onclick.delete(data)}
                     type="primary"
                     icon={<DeleteOutlined />}
                     shape="circle"
@@ -65,37 +68,46 @@ interface Props {
 
 const List: React.FC<Props> = ({ edit, setEdit }) => {
     const [id, setId] = useState();
+    const [data, setData] = useState() as any;
 
-    const onEdit = (key: any) => {
-        setId(key);
+    const onEdit = (data: any) => {
+        setId(data.id);
         setEdit(true);
     };
 
-    const onDelete = () => {};
+    const onDelete = async (data: any) => {
+        await deleteUsers(data.id);
+        getUsersData();
+    };
 
-    const data: DataType[] = [
-        {
-            key: "1",
-            name: "Ali",
-            email: "ali@gmail.com",
-            contactNo: "0111222333",
-            onclick: { edit: onEdit, delete: onDelete },
-        },
-        {
-            key: "2",
-            name: "Abu",
-            email: "abu@gmail.com",
-            contactNo: "0123456789",
-            onclick: { edit: onEdit, delete: onDelete },
-        },
-    ];
+    const getUsersData = async () => {
+        const users: any = await getUsers();
+        setData(
+            _.map(users, (a, i: number) => {
+                return {
+                    ...a,
+                    key: ++i,
+                    onclick: { edit: onEdit, delete: onDelete },
+                };
+            })
+        );
+    };
+
+    useEffect(() => {
+        getUsersData();
+    }, []);
 
     return !edit ? (
         <Table bordered columns={columns} dataSource={data} />
     ) : !id ? (
-        <UserForm setEdit={setEdit} setId={setId} />
+        <UserForm setEdit={setEdit} setId={setId} getUsersData={getUsersData} />
     ) : (
-        <UserForm id={id} setEdit={setEdit} setId={setId} />
+        <UserForm
+            id={id}
+            setEdit={setEdit}
+            setId={setId}
+            getUsersData={getUsersData}
+        />
     );
 };
 

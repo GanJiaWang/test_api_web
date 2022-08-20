@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
 import { Row, Col, Button } from "antd";
 import { Formik, Form, Field } from "formik";
 import { TextInput } from "@components/Fields";
@@ -7,6 +8,7 @@ import {
     composeValidators,
     email,
 } from "@utils/form-validator.utils";
+import { updateAdmins, createAdmins, getAdmin } from "../../api/admin.api";
 
 interface FormProps {
     email: string;
@@ -14,21 +16,40 @@ interface FormProps {
     name: string;
 }
 
-export const AdminForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
-    const { id, setEdit, setId } = props;
+export const AdminForm = (props: {
+    id?: any;
+    setEdit?: any;
+    setId?: any;
+    getAdminsData?: any;
+}) => {
+    const { id, setEdit, setId, getAdminsData } = props;
     const [submitting, setSubmitting] = useState(false);
+    const [oneAdmin, setOneAdmin] = useState() as any;
+
+    useEffect(() => {
+        if (id) getOneAdmin();
+    }, []);
+
+    const getOneAdmin = async () => {
+        const data = await getAdmin(id);
+        setOneAdmin(data);
+    };
 
     const handleSubmit = async (formValues: FormProps) => {
         setSubmitting(true);
         try {
-            console.log(formValues);
+            if (id) {
+                await updateAdmins({ id, formValues });
+                setId();
+            } else {
+                await createAdmins(formValues);
+            }
+            setSubmitting(false);
+            getAdminsData();
             setEdit(false);
-            if (id) setId();
-            //   await requestLogin(formValues)();
         } catch (e) {
-            //   printErrorMessage(e);
+            setSubmitting(false);
         }
-        setSubmitting(false);
     };
 
     const onCancel = () => {
@@ -37,7 +58,14 @@ export const AdminForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
     };
 
     return (
-        <Formik onSubmit={handleSubmit} initialValues={{ email: "", name: "" }}>
+        <Formik
+            enableReinitialize
+            onSubmit={handleSubmit}
+            initialValues={{
+                email: oneAdmin ? oneAdmin.email : "",
+                name: oneAdmin ? oneAdmin.name : "",
+            }}
+        >
             <Form>
                 <div className="w-1/3">
                     <Row
@@ -51,7 +79,6 @@ export const AdminForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 label="Email"
                                 name="email"
                                 type="email"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Email"
                                 validate={composeValidators(required, email)}
@@ -62,7 +89,6 @@ export const AdminForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 required={!id}
                                 label="Password"
                                 name="password"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Password"
                                 type="password"
@@ -74,7 +100,6 @@ export const AdminForm = (props: { id?: any; setEdit?: any; setId?: any }) => {
                                 required
                                 label="Full Name"
                                 name="name"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Full Name"
                                 validate={composeValidators(required)}

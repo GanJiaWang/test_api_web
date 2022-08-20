@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
 import { Row, Col, Button } from "antd";
 import { Formik, Form, Field } from "formik";
-import { TextInput } from "@components/Fields";
+import { TextInput, NumberInput } from "@components/Fields";
 import {
     required,
     requiredNumber,
     composeValidators,
     minValue,
 } from "@utils/form-validator.utils";
+import {
+    updateProducts,
+    createProducts,
+    getProduct,
+} from "../../api/product.api";
 
 interface FormProps {
     description?: string;
@@ -20,21 +26,36 @@ export const ProductForm = (props: {
     id?: any;
     setEdit?: any;
     setId?: any;
+    getProductsData?: any;
 }) => {
-    const { id, setEdit, setId } = props;
+    const { id, setEdit, setId, getProductsData } = props;
     const [submitting, setSubmitting] = useState(false);
+    const [oneProduct, setOneProduct] = useState() as any;
+
+    useEffect(() => {
+        if (id) getOneProduct();
+    }, []);
+
+    const getOneProduct = async () => {
+        const data = await getProduct(id);
+        setOneProduct(data);
+    };
 
     const handleSubmit = async (formValues: FormProps) => {
         setSubmitting(true);
         try {
-            console.log(formValues);
+            if (id) {
+                await updateProducts({ id, formValues });
+                setId();
+            } else {
+                await createProducts(formValues);
+            }
+            setSubmitting(false);
+            getProductsData();
             setEdit(false);
-            if (id) setId();
-            //   await requestLogin(formValues)();
         } catch (e) {
-            //   printErrorMessage(e);
+            setSubmitting(false);
         }
-        setSubmitting(false);
     };
 
     const onCancel = () => {
@@ -44,8 +65,13 @@ export const ProductForm = (props: {
 
     return (
         <Formik
+            enableReinitialize
             onSubmit={handleSubmit}
-            initialValues={{ category: "", name: "", price: 0 }}
+            initialValues={{
+                category: oneProduct ? oneProduct.category : "",
+                name: oneProduct ? oneProduct.name : "",
+                price: oneProduct ? oneProduct.price : "",
+            }}
         >
             <Form>
                 <div className="mx-40">
@@ -59,7 +85,6 @@ export const ProductForm = (props: {
                                 required
                                 label="Product Name"
                                 name="name"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Product Name"
                                 validate={required}
@@ -69,7 +94,6 @@ export const ProductForm = (props: {
                             <Field
                                 label="Description"
                                 name="description"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Description"
                             />
@@ -79,7 +103,6 @@ export const ProductForm = (props: {
                                 required
                                 label="Category"
                                 name="category"
-                                formLayout="vertical"
                                 component={TextInput}
                                 placeholder="Category"
                                 validate={required}
@@ -90,8 +113,7 @@ export const ProductForm = (props: {
                                 required
                                 label="Price"
                                 name="price"
-                                formLayout="vertical"
-                                component={TextInput}
+                                component={NumberInput}
                                 placeholder="Price"
                                 validate={composeValidators(
                                     requiredNumber,

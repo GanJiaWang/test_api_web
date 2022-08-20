@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Space, Table, Tag, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import _ from "lodash";
 import { ADMIN_ROLE } from "@constants";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { AdminForm } from "@components/Forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getAdmins, deleteAdmins } from "../../api/admin.api";
 
 interface DataType {
     key: string;
@@ -59,13 +61,13 @@ const columns: ColumnsType<DataType> = [
         render: (onclick, data) => (
             <Space size="middle">
                 <Button
-                    onClick={() => onclick.edit(data.key)}
+                    onClick={() => onclick.edit(data)}
                     type="primary"
                     icon={<EditOutlined />}
                     shape="circle"
                 />
                 <Button
-                    onClick={() => onclick.delete(data.key)}
+                    onClick={() => onclick.delete(data)}
                     type="primary"
                     icon={<DeleteOutlined />}
                     shape="circle"
@@ -83,37 +85,50 @@ interface Props {
 
 const List: React.FC<Props> = ({ edit, setEdit }) => {
     const [id, setId] = useState();
+    const [data, setData] = useState() as any;
 
-    const onEdit = (key: any) => {
-        setId(key);
+    const onEdit = (data: any) => {
+        setId(data.id);
         setEdit(true);
     };
 
-    const onDelete = () => {};
+    const onDelete = async (data: any) => {
+        await deleteAdmins(data.id);
+        getAdminsData();
+    };
 
-    const data: DataType[] = [
-        {
-            key: "1",
-            name: "Master Admin",
-            email: "masteradmin@gmail.com",
-            role: 1,
-            onclick: { edit: onEdit, delete: onDelete },
-        },
-        {
-            key: "2",
-            name: "Admin",
-            email: "admin@gmail.com",
-            role: 2,
-            onclick: { edit: onEdit, delete: onDelete },
-        },
-    ];
+    const getAdminsData = async () => {
+        const admins: any = await getAdmins();
+        setData(
+            _.map(admins, (a, i: number) => {
+                return {
+                    ...a,
+                    key: ++i,
+                    onclick: { edit: onEdit, delete: onDelete },
+                };
+            })
+        );
+    };
+
+    useEffect(() => {
+        getAdminsData();
+    }, []);
 
     return !edit ? (
         <Table bordered columns={columns} dataSource={data} />
     ) : !id ? (
-        <AdminForm setEdit={setEdit} setId={setId} />
+        <AdminForm
+            setEdit={setEdit}
+            setId={setId}
+            getAdminsData={getAdminsData}
+        />
     ) : (
-        <AdminForm id={id} setEdit={setEdit} setId={setId} />
+        <AdminForm
+            id={id}
+            setEdit={setEdit}
+            setId={setId}
+            getAdminsData={getAdminsData}
+        />
     );
 };
 

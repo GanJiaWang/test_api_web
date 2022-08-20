@@ -13,7 +13,7 @@ const Home: React.FC = () => {
             <Head>
                 <title>Next.JS</title>
             </Head>
-            <Layout className="h-screen">
+            <Layout className="h-full">
                 <Sidebar collapsed={collapsed} />
                 <Layout className="site-layout">
                     <Header collapsed={collapsed} setCollapsed={setCollapsed} />

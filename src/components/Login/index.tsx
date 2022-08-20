@@ -2,6 +2,7 @@
 import { Image, Row, Col, Card } from "antd";
 import { LoginForm } from "@components/Forms";
 
+
 const LoginComponents: React.FC = () => {
     return (
         <div className="container-fluid h-screen">
