@@ -13,15 +13,25 @@ const { Header } = Layout;
 interface Props {
     collapsed: boolean;
     setCollapsed: Function;
+    setAuth: Function;
 }
 
-const HeaderComponents: React.FC<Props> = ({ collapsed, setCollapsed }) => {
+const HeaderComponents: React.FC<Props> = ({
+    collapsed,
+    setCollapsed,
+    setAuth,
+}) => {
     const router = useRouter();
+
+    const onLogout = () => {
+        router.push("/");
+        setAuth(false);
+    };
 
     const UserDropDownMenu = (
         <Menu>
             <Menu.Item>
-                <a onClick={() => router.push("/")}>
+                <a onClick={onLogout}>
                     <div className="text-red-500 flex items-center">
                         <LogoutOutlined className="mr-2" />
                         Logout
@@ -32,7 +42,10 @@ const HeaderComponents: React.FC<Props> = ({ collapsed, setCollapsed }) => {
     );
 
     return (
-        <Header className="site-layout-background first-header" style={{ padding: 0 }}>
+        <Header
+            className="site-layout-background first-header"
+            style={{ padding: 0 }}
+        >
             {React.createElement(
                 collapsed ? MenuUnfoldOutlined : MenuFoldOutlined,
                 {

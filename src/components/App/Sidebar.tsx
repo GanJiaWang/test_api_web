@@ -7,52 +7,57 @@ const { Sider } = Layout;
 
 interface Props {
     collapsed: boolean;
+    sidebarKey: string;
+    setSidebarKey: Function;
 }
 
-const SidebarComponents: React.FC<Props> = ({ collapsed }) => {
+interface OnGoProps {
+    link: string;
+    key?: string;
+}
+
+const SidebarComponents: React.FC<Props> = ({
+    collapsed,
+    sidebarKey,
+    setSidebarKey,
+}) => {
     const router = useRouter();
-    const selected = router.query.selectedValue
-        ? `${router.query.selectedValue}`
-        : "1";
+
+    const onGo = ({ link, key }: OnGoProps) => {
+        if (key) setSidebarKey(key);
+        router.push(`/${link}`);
+    };
+
     return (
         <Sider trigger={null} collapsible collapsed={collapsed} width={225}>
-            <div onClick={() => router.push("/admin")} className="sidebar-logo">
+            <div
+                onClick={() => onGo({ link: "admin" })}
+                className="sidebar-logo"
+            >
                 LOGO
             </div>
             <Menu
                 theme="dark"
                 mode="inline"
-                defaultSelectedKeys={[selected]}
+                defaultSelectedKeys={[sidebarKey]}
                 items={[
                     {
                         key: "1",
                         icon: <UserOutlined />,
                         label: "Admin Management",
-                        onClick: () =>
-                            router.push({
-                                pathname: `/admin`,
-                                query: { selectedValue: "1" },
-                            }),
+                        onClick: () => onGo({ link: "admin", key: "1" }),
                     },
                     {
                         key: "2",
                         icon: <UserOutlined />,
                         label: "User Management",
-                        onClick: () =>
-                            router.push({
-                                pathname: `/user`,
-                                query: { selectedValue: "2" },
-                            }),
+                        onClick: () => onGo({ link: "user", key: "2" }),
                     },
                     {
                         key: "3",
                         icon: <ShopOutlined />,
                         label: "Product Management",
-                        onClick: () =>
-                            router.push({
-                                pathname: `/product`,
-                                query: { selectedValue: "3" },
-                            }),
+                        onClick: () => onGo({ link: "product", key: "3" }),
                     },
                 ]}
             />

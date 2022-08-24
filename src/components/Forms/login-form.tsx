@@ -17,7 +17,11 @@ interface FormProps {
     password: string;
 }
 
-export const LoginForm: React.FC = () => {
+interface Props {
+    setAuth: Function;
+}
+
+export const LoginForm: React.FC<Props> = ({ setAuth }) => {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
 
@@ -25,10 +29,11 @@ export const LoginForm: React.FC = () => {
         setSubmitting(true);
         try {
             await requestLoginUser(formValues);
-            router.push("/admin");
-        } catch (e) {
-        }
-        setSubmitting(false);
+            router.push("/admin").then(() => {
+                setAuth(true);
+                setSubmitting(false);
+            });
+        } catch (e) {}
     };
 
     return (

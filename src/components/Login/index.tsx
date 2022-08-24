@@ -2,8 +2,11 @@
 import { Image, Row, Col, Card } from "antd";
 import { LoginForm } from "@components/Forms";
 
+interface Props {
+    setAuth: Function;
+}
 
-const LoginComponents: React.FC = () => {
+const LoginComponents: React.FC<Props> = ({ setAuth }) => {
     return (
         <div className="container-fluid h-screen">
             <Row justify="center" align="middle" className="login-wrapper">
@@ -28,7 +31,7 @@ const LoginComponents: React.FC = () => {
                         <h2 className="login-title text-xl">
                             ADMIN DASHBOARD | LOGIN
                         </h2>
-                        <LoginForm />
+                        <LoginForm setAuth={setAuth} />
                     </Card>
                 </Col>
             </Row>
